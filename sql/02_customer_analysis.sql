@@ -1,24 +1,18 @@
 /*
 Проєкт:     Olist E-Commerce SQL Analytics
 Файл:       02_customer_analysis.sql
-Автор:      Sasha
-Призначення: Аналіз поведінки клієнтів: частота повторних покупок
-             та RFM-сегментація (Recency, Frequency, Monetary).
-             Використовується для виявлення структурних проблем retention
-             та класифікації клієнтської бази на actionable сегменти.
+Автор:      Oleksandr Kiichenko
 */
 
 
--- ============================================================
--- ЗАПИТ 1: Repeat Purchase Rate (частка клієнтів з повторними покупками)
+-- Repeat Purchase Rate (частка клієнтів з повторними покупками)
 -- Бізнес-питання: Яка частка клієнтів зробила більше однієї покупки?
--- ============================================================
+
 
 WITH customer_orders AS (
-    -- Кількість унікальних замовлень на кожного унікального клієнта
     SELECT
-        c.customer_unique_id,
-        COUNT(DISTINCT o.order_id) AS order_count
+        c.customer_unique_id
+        ,COUNT(DISTINCT o.order_id) AS order_count
     FROM customers c
     JOIN orders o ON c.customer_id = o.customer_id
     WHERE o.order_status = 'delivered'
@@ -26,13 +20,12 @@ WITH customer_orders AS (
 )
 
 SELECT
-    COUNT(DISTINCT customer_unique_id)                                               AS total_customers,
-    -- Рахуємо тільки клієнтів з більш ніж одним замовленням
-    COUNT(DISTINCT CASE WHEN order_count > 1 THEN customer_unique_id END)            AS repeat_customers,
-    ROUND(
+    COUNT(DISTINCT customer_unique_id) AS total_customers
+    ,COUNT(DISTINCT CASE WHEN order_count > 1 THEN customer_unique_id END) AS repeat_customers
+    ,ROUND(
         COUNT(DISTINCT CASE WHEN order_count > 1 THEN customer_unique_id END)::NUMERIC
         / COUNT(DISTINCT customer_unique_id) * 100,
-    1)                                                                               AS repeat_rate_pct
+    1) AS repeat_rate_pct
 FROM customer_orders;
 
 -- Примітки:
@@ -44,49 +37,43 @@ FROM customer_orders;
 
 
 -- ============================================================
--- ЗАПИТ 2: RFM-сегментація клієнтів
+
+
+-- RFM-сегментація клієнтів
 -- Бізнес-питання: Як класифікувати клієнтів за поведінкою
 --                 для пріоритизації retention та реактивації?
--- ============================================================
+
 
 WITH rfm_base AS (
-    -- Базові RFM-метрики для кожного унікального клієнта
     SELECT
         c.customer_unique_id,
-        MAX(o.order_purchase_timestamp)::DATE                      AS last_order,
-        COUNT(o.order_id)                                          AS total_orders,
-        SUM(oi.price + oi.freight_value)                           AS total_expenses,
-        -- Recency: кількість днів з останньої покупки (менше = краще)
-        '2018-08-29'::DATE - MAX(o.order_purchase_timestamp)::DATE AS recency
+        ,MAX(o.order_purchase_timestamp)::DATE AS last_order
+        ,COUNT(o.order_id) AS total_orders
+        ,SUM(oi.price + oi.freight_value) AS total_expenses
+        ,'2018-08-29'::DATE - MAX(o.order_purchase_timestamp)::DATE AS recency
     FROM customers c
-    JOIN orders o      ON c.customer_id  = o.customer_id
+    JOIN orders o ON c.customer_id  = o.customer_id
     JOIN order_items oi ON o.order_id    = oi.order_id
     WHERE o.order_status = 'delivered'
     GROUP BY 1
 ),
 
 rfm_scores AS (
-    -- Оцінка кожної метрики від 1 до 4 через NTILE (4 = найкращий)
     SELECT
-        customer_unique_id,
-        last_order,
-        total_orders,
-        total_expenses,
-        -- Recency: ASC щоб нещодавні покупці (малий recency) отримали score 4
-        NTILE(4) OVER (ORDER BY recency ASC)          AS recency_score,
-        -- Frequency: DESC щоб часті покупці отримали score 4
-        NTILE(4) OVER (ORDER BY total_orders DESC)    AS total_orders_score,
-        -- Monetary: DESC щоб великі витратники отримали score 4
-        NTILE(4) OVER (ORDER BY total_expenses DESC)  AS total_expenses_score
+        customer_unique_id
+        ,last_order
+        ,total_orders
+        ,total_expenses
+        ,NTILE(4) OVER (ORDER BY recency ASC) AS recency_score
+        ,NTILE(4) OVER (ORDER BY total_orders DESC) AS total_orders_score
+        ,NTILE(4) OVER (ORDER BY total_expenses DESC) AS total_expenses_score
     FROM rfm_base
 ),
 
 segments AS (
-    -- Класифікація клієнтів у сегменти на основі комбінацій scores
-    -- Порядок WHEN важливий: PostgreSQL бере першу умову що спрацювала
     SELECT
-        customer_unique_id,
-        CASE
+        customer_unique_id
+        ,CASE
             WHEN recency_score = 4
              AND total_orders_score = 4
              AND total_expenses_score = 4  THEN 'champion'
@@ -102,9 +89,9 @@ segments AS (
 )
 
 SELECT
-    segment,
-    COUNT(customer_unique_id)                                                                    AS cnt_users,
-    ROUND(COUNT(customer_unique_id)::NUMERIC / SUM(COUNT(customer_unique_id)) OVER () * 100, 1) AS pct_of_base
+    segment
+    ,COUNT(customer_unique_id) AS cnt_users
+    ,ROUND(COUNT(customer_unique_id)::NUMERIC / SUM(COUNT(customer_unique_id)) OVER () * 100, 1) AS pct_of_base
 FROM segments
 GROUP BY 1
 ORDER BY 2 DESC;
