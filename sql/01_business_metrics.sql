@@ -1,25 +1,16 @@
 /*
 Проєкт:     Olist E-Commerce SQL Analytics
 Файл:       01_business_metrics.sql
-Автор:      Sasha
-Призначення: Динаміка revenue по місяцях з MoM growth rate та
-             аналіз топ-10 категорій товарів за виручкою і AOV.
-             Використовується для виявлення точок зупинки зростання,
-             сезонних патернів та порівняння premium vs масових сегментів.
+Автор:      Oleksandr Kiichenko
 */
 
-
--- ============================================================
--- ЗАПИТ 1: Місячний Revenue з MoM Growth Rate
--- Бізнес-питання: Як змінюється виручка місяць до місяця
---                 і де знаходяться точки гальмування зростання?
--- ============================================================
+-- Місячний Revenue з MoM Growth Rate
+-- Бізнес-питання: Як змінюється виручка місяць до місяця і де знаходяться точки гальмування зростання?
 
 WITH month_rev AS (
-    -- Агрегація виручки по доставлених замовленнях за календарний місяць
     SELECT
-        DATE_TRUNC('month', o.order_purchase_timestamp)::DATE AS month,
-        ROUND(SUM(oi.price)::NUMERIC, 2)                      AS revenue
+        DATE_TRUNC('month', o.order_purchase_timestamp)::DATE AS month
+        ,ROUND(SUM(oi.price)::NUMERIC, 2) AS revenue
     FROM orders o
     JOIN order_items oi ON o.order_id = oi.order_id
     WHERE o.order_status = 'delivered'
@@ -27,15 +18,13 @@ WITH month_rev AS (
 )
 
 SELECT
-    month,
-    revenue,
-    -- LAG повертає виручку попереднього місяця для порівняння
-    LAG(revenue) OVER (ORDER BY month)                             AS revenue_prev_month,
-    -- MoM growth: (поточний - попередній) / попередній * 100
-    ROUND(
+    month
+    ,revenue
+    ,LAG(revenue) OVER (ORDER BY month) AS revenue_prev_month
+    ,ROUND(
         (revenue - LAG(revenue) OVER (ORDER BY month))
         / LAG(revenue) OVER (ORDER BY month) * 100,
-    2)                                                             AS mom_growth_pct
+    2) AS mom_growth_pct
 FROM month_rev
 ORDER BY month;
 
@@ -49,19 +38,19 @@ ORDER BY month;
 
 
 -- ============================================================
--- ЗАПИТ 2: Топ-10 категорій товарів за Revenue з AOV
+
+
+-- Топ-10 категорій товарів за Revenue з AOV
 -- Бізнес-питання: Які категорії генерують найбільший дохід
 --                 і який середній чек у кожній?
--- ============================================================
+
 
 WITH cat_rnk AS (
-    -- Агрегація виручки і кількості замовлень по категоріях товарів
-    -- RANK() замість ROW_NUMBER() — коректно обробляє однакові значення виручки
     SELECT
-        p.product_category_name,
-        COUNT(o.order_id)                          AS cnt_orders,
-        ROUND(SUM(oi.price)::NUMERIC, 2)           AS revenue,
-        RANK() OVER (ORDER BY SUM(oi.price) DESC)  AS rnk
+        p.product_category_name
+        ,COUNT(o.order_id) AS cnt_orders
+        ,ROUND(SUM(oi.price)::NUMERIC, 2) AS revenue
+        ,RANK() OVER (ORDER BY SUM(oi.price) DESC) AS rnk
     FROM orders o
     JOIN order_items oi ON o.order_id    = oi.order_id
     JOIN products p     ON oi.product_id = p.product_id
@@ -70,11 +59,10 @@ WITH cat_rnk AS (
 )
 
 SELECT
-    product_category_name,
-    cnt_orders,
-    revenue,
-    -- AOV = виручка / кількість замовлень для розмежування premium і масових категорій
-    ROUND(revenue / cnt_orders, 2) AS aov
+    product_category_name
+    ,cnt_orders
+    ,revenue
+    ,ROUND(revenue / cnt_orders, 2) AS aov
 FROM cat_rnk
 WHERE rnk <= 10
 ORDER BY revenue DESC;
