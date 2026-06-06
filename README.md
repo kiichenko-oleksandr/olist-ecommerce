@@ -37,9 +37,9 @@
 
 ```
 ├── README.md
-├── Project_1.ipynb          # Повний аналіз (notebook)
-├── REPORT.docx              # Executive Summary (SCR формат)
-└── data/                    # CSV файли (не відстежуються)
+├── EDA_python_olis.ipynb 
+├── REPORT.docx              
+└── sql                    
 ```
 
 ## Структура аналізу
