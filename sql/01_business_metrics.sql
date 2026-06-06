@@ -26,7 +26,7 @@ SELECT
         / LAG(revenue) OVER (ORDER BY month) * 100,
     2) AS mom_growth_pct
 FROM month_rev
-ORDER BY month;
+ORDER BY 1;
 
 -- Примітки:
 -- Дані до 2017 виключені з висновків: Olist знаходився на стадії запуску
@@ -65,7 +65,7 @@ SELECT
     ,ROUND(revenue / cnt_orders, 2) AS aov
 FROM cat_rnk
 WHERE rnk <= 10
-ORDER BY revenue DESC;
+ORDER BY 3 DESC;
 
 -- Примітки:
 -- freight_value виключено з виручки: price вимірює дохід від продажу товару;
