@@ -37,7 +37,7 @@
 
 ```
 ├── README.md
-├── EDA_python_olis.ipynb 
+├── EDA_Olist_Ecommerce.ipynb 
 ├── REPORT.docx              
 └── sql                    
 ```
