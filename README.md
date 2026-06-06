@@ -1,76 +1,72 @@
 # 🇧🇷 Brazilian E-Commerce (Olist) — Exploratory Data Analysis
 
-Full EDA of the Brazilian e-commerce marketplace Olist: **98,666 orders** from **95,420 customers** through **3,095 sellers** across **73 product categories** (Sep 2016 — Aug 2018).
+Повний EDA бразильського e-commerce маркетплейсу Olist: **98,666 замовлень** від **95,420 клієнтів** через **3,095 продавців** у **73 категоріях товарів** (вересень 2016 — серпень 2018).
 
-## Key Findings
+## Ключові знахідки
 
-- **Growth plateau:** Revenue grew 8x in 2017 ($146K → $1.2M/mo), then flatlined in 2018. Growth was entirely acquisition-driven — AOV stayed flat at $160–180.
-- **Retention crisis:** 97% of customers never return. Repeat rate is 3.1%. Cohort analysis confirms: no cohort retains even 1% after month one. No improvement between 2017 and 2018 cohorts.
-- **Delivery → ratings → retention chain:** 7.9% of orders arrive late. Late orders score 2.55 vs 4.15 for on-time (–1.6 points). Delivery time ranges from 8 days (São Paulo) to 28 days (Roraima) — a 3.4x gap driven by geography.
-- **Geographic concentration:** Top 5 states = 73.1% of revenue. São Paulo alone = 37.4%.
-- **Pareto in sellers:** 18.1% of sellers generate 80% of revenue.
+- **Growth plateau:** Revenue виріс у 8 разів за 2017 рік ($146K → $1.2M/міс), потім стабілізувався у 2018. Зростання було повністю за рахунок залучення нових клієнтів — AOV залишався на рівні $160–180.
+- **Криза retention:** 97% клієнтів не повертаються. Repeat rate — 3.1%. Когортний аналіз підтверджує: жодна когорта не утримує навіть 1% після першого місяця. Покращення між когортами 2017 і 2018 відсутнє.
+- **Ланцюг: доставка → оцінки → retention:** 7.9% замовлень із запізненням. Оцінка запізнілих — 2.55 vs 4.15 вчасних (–1.6 бали). Час доставки: від 8 днів (São Paulo) до 28 днів (Roraima) — різниця у 3.4 рази.
+- **Географічна концентрація:** Топ-5 штатів = 73.1% revenue. São Paulo один = 37.4%.
+- **Pareto у продавцях:** 18.1% продавців генерують 80% виручки.
 
-## Recommendations
+## Рекомендації
 
-1. **Retention program** — email reminders, loyalty program, personalized recommendations. Target: 3% → 8–10% repeat rate in 6 months.
-2. **Delivery optimization** — regional logistics partners or intermediate warehouses for northern states. Target: reduce remote delivery from 25+ to 15 days.
-3. **Seller development** — targeted support for mid-tier sellers to reduce revenue concentration.
-4. **NPS research** — survey returning vs one-time customers to understand barriers.
+1. **Retention-програма** — email-нагадування, програма лояльності, персоналізовані рекомендації. Ціль: підняти repeat rate з 3% до 8–10% за 6 місяців.
+2. **Оптимізація доставки** — партнерство з регіональними перевізниками або проміжні склади для північних штатів. Ціль: зменшити доставку з 25+ до 15 днів.
+3. **Розвиток продавців** — targeted support для середніх продавців для зниження концентрації revenue.
+4. **NPS дослідження** — опитування повторних клієнтів (що мотивує?) і одноразових (чому не повернулись?).
 
-## Dataset
+## Датасет
 
-[Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) — 9 CSV files:
+[Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) — 9 CSV файлів:
 
-| Table | Rows | Description |
-|-------|------|-------------|
-| orders | 99,441 | Order timestamps, status, delivery dates |
-| items | 112,650 | Products in each order, prices, freight |
-| payments | 103,886 | Payment method, installments, value |
-| customers | 99,441 | Customer location (city, state) |
-| reviews | 99,224 | Review scores and comments |
-| sellers | 3,095 | Seller location |
-| products | 32,951 | Product attributes, category |
-| geolocation | 1,000,163 | Zip code coordinates |
-| categories | 71 | Category name translations (PT → EN) |
+| Таблиця | Рядків | Опис |
+|---------|--------|------|
+| orders | 99,441 | Дати замовлень, статус, дати доставки |
+| items | 112,650 | Товари в замовленнях, ціни, вартість доставки |
+| payments | 103,886 | Спосіб оплати, розстрочка, сума |
+| customers | 99,441 | Локація клієнтів (місто, штат) |
+| reviews | 99,224 | Оцінки та коментарі |
+| sellers | 3,095 | Локація продавців |
+| products | 32,951 | Атрибути товарів, категорія |
+| geolocation | 1,000,163 | Координати поштових індексів |
+| categories | 71 | Переклад назв категорій (PT → EN) |
 
-## Project Structure
+## Структура проєкту
 
 ```
 ├── README.md
-├── Project_1.ipynb          # Full analysis notebook
-├── REPORT.docx              # Executive Summary (SCR format)
-└── data/                    # Raw CSV files (not tracked)
+├── Project_1.ipynb          # Повний аналіз (notebook)
+├── REPORT.docx              # Executive Summary (SCR формат)
+└── data/                    # CSV файли (не відстежуються)
 ```
 
-## Analysis Structure
+## Структура аналізу
 
-| # | Section | What it covers |
-|---|---------|---------------|
-| 1 | Import & Preparation | Merge 9 tables, clean missing data, create revenue column |
-| 2 | Big Picture | Business scale, monthly revenue trend, AOV analysis |
-| 3 | Customer Analysis | New vs returning (3.1%), state distribution, cohort retention |
-| 4 | Product Analysis | Top categories by revenue/orders/AOV, monthly trends |
-| 5 | Delivery Analysis | Avg delivery time, late orders (7.9%), speed by state |
-| 6 | Review Analysis | Rating distribution, delivery ↔ rating correlation |
-| 7 | Payment Analysis | Payment methods, installment usage |
-| 8 | Seller Analysis | Pareto distribution (18.1% → 80% revenue) |
+| # | Розділ | Що включає |
+|---|--------|------------|
+| 1 | Import & Preparation | Merge 9 таблиць, очищення даних, створення колонки revenue |
+| 2 | Big Picture | Масштаб бізнесу, місячний тренд revenue, аналіз AOV |
+| 3 | Customer Analysis | Нові vs повторні (3.1%), розподіл по штатах, когортний retention |
+| 4 | Product Analysis | Топ категорії по revenue/замовленнях/AOV, місячні тренди |
+| 5 | Delivery Analysis | Середній час доставки, запізнення (7.9%), швидкість по штатах |
+| 6 | Review Analysis | Розподіл оцінок, кореляція доставка ↔ оцінки |
+| 7 | Payment Analysis | Способи оплати, розстрочка |
+| 8 | Seller Analysis | Pareto розподіл (18.1% → 80% revenue) |
 | 9 | Executive Summary | SCR: Situation, Complication, Recommendations, Limitations |
 
-## Tech Stack
+## Стек технологій
 
 - **Python 3** (Google Colab)
-- **Pandas** — data manipulation, groupby, pivot tables, merge
-- **NumPy** — numerical operations
-- **Matplotlib** — revenue trends, bar charts
-- **Seaborn** — cohort retention heatmap
+- **Pandas** — обробка даних, groupby, pivot tables, merge
+- **NumPy** — числові операції
+- **Matplotlib** — тренди revenue, bar charts
+- **Seaborn** — heatmap когортного retention
 
-## How to Run
+## Як запустити
 
-1. Download dataset from [Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
-2. Place CSV files in the same directory as the notebook
-3. Open `Project_1.ipynb` in Google Colab or Jupyter
-4. Run all cells
-
-## Author
-
-**Sasha** — aspiring Data / Product Analyst. This is Project 1 in a portfolio series covering EDA, SQL analytics, A/B testing, and modern data stack (dbt + Airflow).
+1. Завантажити датасет з [Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
+2. Розмістити CSV файли в одній директорії з notebook
+3. Відкрити `Project_1.ipynb` у Google Colab або Jupyter
+4. Запустити всі клітинки
